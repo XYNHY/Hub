@@ -1,0 +1,262 @@
+local Plr_Config = {
+	ws = false,
+	JP = false,
+}
+
+if Plr_Config.ws == true then
+	local RS = game:GetService("RunService")
+	RS.Heartbeat:Connect(function()
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
+	end)
+end
+
+if Plr_Config.JP == true then
+	local RS = game:GetService("RunService")
+	RS.Heartbeat:Connect(function()
+		game.Players.LocalPlayer.Character.Humanoid.JumpPower = 200
+	end)
+end
+
+
+local UILib = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/aaaa"))()
+
+local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/XYNHY/MadCityHaxx/main/ESPLIB"))()
+
+local UI = UILib:CreateWindow("VashX Hub - Big PaintBall","UI")
+
+local Visuals = UI:addPage("Visuals",1,true,6)
+
+local AimBot = UI:addPage("AimBot",2,false,6)
+
+local GunMods = UI:addPage("GunMods",3,false,6)
+
+local PlrCheats = UI:addPage("Player Cheats",4,false,6)
+
+local EnableESP = Visuals:addToggle("Enable",function(value1)
+	ESP:Toggle(value1)
+end)
+
+local BoxESP = Visuals:addToggle("Boxes", function(value2)
+	ESP.Boxes = value2
+end)
+
+local Tracers = Visuals:addToggle("Tracers", function(value3)
+	ESP.Tracers = value3
+end)
+
+local NameESP = Visuals:addToggle("Name", function(value4)
+	ESP.Names = value4
+end)
+
+local TeamColorESP = Visuals:addToggle("TeamColor", function(value5)
+	ESP.TeamColor = value5
+end)
+
+local PlayersESP = Visuals:addToggle("Players", function(value6)
+	ESP.Players = value6
+end)
+
+local SilentAim = AimBot:addToggle("Silent Aim", function(value7)
+	if value7 then
+		-- veriables --
+		local Plr = game:GetService("Players").LocalPlayer
+		local mouse = Plr:GetMouse()
+		local mousedown = false
+		local isonmovething = false
+		local target
+
+		-- Shoot Through Walls --
+		local mt = getrawmetatable(game)
+		local nc = mt.__namecall
+
+		setreadonly(mt, false)
+
+		mt.__namecall = newcclosure(function(self, ...)
+			local Method = getnamecallmethod()
+			local Arguments = {...}
+
+			if Method == 'FindPartOnRayWithIgnoreList' and value7 then
+				table.insert(Arguments[2], game.GetService(game, 'Workspace').Map)
+
+				return nc(self, unpack(Arguments))
+			end
+
+			return nc(self,...)
+		end)
+
+		setreadonly(mt, true)
+
+		-- mouse event for the Silent Aim
+
+		mouse.Button1Down:connect(function()
+			if game.Players.LocalPlayer:FindFirstChild("__SPAWNED")then
+				target=nil
+				for _,v in pairs(game.Players:GetChildren())do
+					if 
+						v.Character and
+						v.Character.Parent==game.Workspace and
+						(
+							v.Team~=game.Players.LocalPlayer.Team or
+								(
+									game:GetService("Workspace")["__VARIABLES"].RoundType.Value=="FFA"and
+									v~=game.Players.LocalPlayer and
+									math.random(1,0)
+								)
+						)and 
+							v.Character:FindFirstChild("Humanoid")and
+							v:FindFirstChild("__SPAWNED")and
+							not v.Character:FindFirstChild("ForceField")then
+						target=v.Character
+						require(game:GetService("ReplicatedStorage").Framework.Modules["2 | Network"]).Fire("New Projectile",1,1,math.floor(game.Workspace.DistributedGameTime))
+						break
+					end
+				end
+			end
+		end)
+
+		-- hook namecall,  detect projectile and fire the do damage remote
+
+		local namecall
+		namecall=hookmetamethod(game,"__namecall",function(a,b,c,d,e,...)
+			if tostring(getnamecallmethod())=="FireServer"and tostring(a)=="new projectile"and target~=nil then
+				game.Workspace.__THINGS.__REMOTES["do damage"]:FireServer(
+					{
+						target.Humanoid,
+						b[2],
+						235,
+						target.HumanoidRootPart.Position,
+						false
+					}
+				)
+			end
+			return namecall(a,b,c,d,e,...)
+		end)
+	end
+end)
+
+local RapidFire = GunMods:addToggle("Rapid Fire", function(value8)
+	if value8 then
+		for i,v in next, getgc(true) do
+			if type(v) == "table" and rawget(v, "damage") then
+				v.shotrate = 0.001
+				v.burstDelay = 0
+			end
+		end
+	end
+end)
+
+local Automatic = GunMods:addToggle("Automatic", function(value9)
+	for i,v in next, getgc(true) do
+		if type(v) == "table" and rawget(v, "damage") then
+			v.automatic = value9
+		end
+	end
+end)
+
+local InfiniteDamage = GunMods:addToggle("Infinite Damage", function(value10)
+	if value10 then
+		for i, v in next, getgc(true) do
+			if type(v) == "table" and rawget(v, "damage") then
+				v.damage = math.huge
+			end
+		end
+	end
+end)
+
+local InfiniteAmmo = GunMods:addToggle("Infinite Ammo", function(value11)
+	if value11 then
+		local function modify(str, val)
+			for i, v in pairs(getgc(true)) do
+				if type(v) == "table" and rawget(v, str) then
+					v[str] = val
+				end
+			end
+		end
+		modify("LoadedAmmo", 9e9)
+		modify("isLimited", false)
+		modify("disableRagdoll", true)
+	end
+end)
+
+local InfiniteVelocity = GunMods:addToggle("Infinite Velocity", function(value12)
+	if value12 then
+		for i,v in next, getgc(true) do
+			if type(v) == "table" and rawget(v, "damage") then
+				v.velocity = math.huge
+			end
+		end
+	end
+end)
+
+local AdditionalSpeed = GunMods:addToggle("AdditionalSpeed", function(value13)
+	if value13 then
+		for i,v in next, getgc(true) do
+			if type(v) == "table" and rawget(v, "damage") then
+				v.additionalspeed = 10
+			end
+		end
+	end
+end)
+
+local GadgetDamage = GunMods:addToggle("GadgetDamage", function(value14)
+	if value14 then
+		for i,v in next, getgc(true) do
+			if type(v) == "table" and rawget(v, "damge") then
+				v.gadgetDamage = 8000
+			end
+		end
+	end
+end)
+
+local GodMode = PlrCheats:addToggle("GodMode", function(value15)
+	if value15 then
+		repeat
+			task.wait()
+			if (game.Players.LocalPlayer.Character.Humanoid.RigType == Enum.HumanoidRigType.R15) then
+				if (game.Players.LocalPlayer.Character:FindFirstChild("LowerTorso")) then
+					if (game.Players.LocalPlayer.Character.LowerTorso:FindFirstChild("Root")) then
+						game.Players.LocalPlayer.Character.LowerTorso.Root:remove()
+					end
+				end
+			else
+				--print('Not R15!')
+			end
+		until nil
+	end
+end)
+
+local fly = PlrCheats:addToggle("Fly", function(value16)
+	if value16 then
+		print("coming soon!")
+	end
+end)
+
+local AutoShoot = PlrCheats:addToggle("AutoShoot", function(value)
+	if value then
+		print("coming soon!")
+	end
+end)
+
+local WalkSpeed = PlrCheats:addToggle("WalkSpeed", function(value16)
+	Plr_Config.ws = value16
+end)
+
+local JumpPower = PlrCheats:addToggle("JumpPower", function(value17)
+	Plr_Config.JP = value17
+end)
+
+local night = PlrCheats:addToggle("Night Time", function(value18)
+	if value18 then
+		game:GetService("Lighting").TimeOfDay = 0
+	else
+		game:GetService("Lighting").TimeOfDay = 15
+	end
+end)
+
+local Custom_zoom = PlrCheats:addSlider("Custom Zoom", 16,100, function(value19)
+	for i,v in next, getgc(true) do
+		if type(v) == "table" and rawget(v, "damage") then
+			v.zoomAmount = value19
+		end
+	end
+end)
