@@ -20,7 +20,7 @@ local loaders = {}
 --
 local utility = {}
 --
-local check_exploit = (syn and "Synapse") or (KRNL_LOADED and "Krnl") or (isourclosure and "ScriptWare") or nil
+local check_exploit = (syn and "Synapse") or (KRNL_LOADED and "Krnl") or (isourclosure and "ScriptWare") or (is_VashX and "VashX") or nil
 local plrs = game:GetService("Players")
 local cre = game:GetService("CoreGui")
 local rs = game:GetService("RunService")
