@@ -40,7 +40,7 @@ local module = {
 }
 
 -- Libraries
-local Math = loadstring(game:HttpGet("https://ducksite.xyz/ceri/irays_math.lua"))()
+local Math = loadstring(game:HttpGet("https://raw.githubusercontent.com/XYNHY/Hub/main/ESPLib/Math.lua"))()
 
 -- Services
 local Players = game:GetService("Players")
