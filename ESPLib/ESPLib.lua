@@ -1,4 +1,4 @@
--- Credits to siper for the ESP Library
+-- Credits to siper for the ESP Library and Iray for Math.lua
 
 local module = {
     drawingcache = {},
