@@ -1,348 +1,151 @@
--- Credits to siper for the ESP Library and Iray for Math.lua
+-- Credits to deto for the ESP
+local plr = game:GetService("Players").LocalPlayer
+local cam = workspace.CurrentCamera
 
-local module = {
-    drawingcache = {},
-    cache = {},
-    settings = {
-        enabled = true,
-        refreshrate = 5,
-        limitdistance = true,
-        maxdistance = 2500,
-        teamcheck = false,
-        teamcolor = true,
-        textoffset = 0,
-        textfont = 0,
-        textsize = 18,
-        names = true,
-        namesoutline = false,
-        namescolor = Color3.new(1, 1, 1),
-        distance = true,
-        distanceoutline = false,
-        distancecolor = Color3.new(1, 1, 1),
-        boxes = true,
-        boxesoutline = false,
-        boxesfill = false,
-        boxesfillcolor = Color3.new(1, 1, 1),
-        boxesfilltrans = 0.5,
-        boxescolor = Color3.new(1, 1, 1),
-        tracers = false,
-        tracerscolor = Color3.new(1, 1, 1),
-        tracersorigin = "Bottom",
-        healthbars = false,
-        healthbarsoffset = 2,
-        healthbarsoutline = false,
-        healthbarscolor = Color3.new(0, 1, 0),
-        
-        aimtarget_on = false,
-        aimtarget = nil,
-        aimtarget_color = Color3.new(252, 186, 3),
-    }
-}
-
--- Libraries
-local Math = loadstring(game:HttpGet("https://raw.githubusercontent.com/XYNHY/Hub/main/ESPLib/Math.lua"))()
-
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- Cache
-local LocalPlayer = Players.LocalPlayer
-local CurrentCamera = workspace.CurrentCamera
-local Mouse = LocalPlayer:GetMouse()
-
--- Functions
-function module:Create(Class, Properties)
-    local Object = Drawing.new(Class)
-
-    for i,v in pairs(Properties) do
-        Object[i] = v
-    end
-
-    table.insert(self.drawingcache, Object)
-    return Object
+function calcdistance(part, part2)
+    return math.floor(((part.Position - part2.Position).magnitude) + 0.5)
 end
 
-function module:ParseColor(Color, Player)
-    local TeamColor = self:GetTeamColor(Player) or Color
-    return self.settings.teamcolor and TeamColor or Color
+local function GetPartCorners(Part)
+	local Size = Part.Size
+	return {
+        TR = (Part.CFrame * CFrame.new(-Size.X, -Size.Y, 0)).Position,
+		BR = (Part.CFrame * CFrame.new(-Size.X, Size.Y, 0)).Position,
+		TL = (Part.CFrame * CFrame.new(Size.X, -Size.Y, 0)).Position,
+		BL = (Part.CFrame * CFrame.new(Size.X, Size.Y, 0)).Position,
+	}
 end
 
-function module:AddEsp(Player)
-    if (Player == LocalPlayer) then
-        return
-    end
+_G.esp = true
+_G.tracers = true
+_G.name = true
 
-    local Retainer = {}
-
-    Retainer.nameobject = self:Create("Text", {
-        Visible = false,
-        Text = Player.Name,
-        Color = Color3.new(1, 1, 1),
-        Size = 13,
-        Center = true,
-        Outline = true,
-        OutlineColor = Color3.new(0, 0, 0),
-        Font = Drawing.Fonts.Plex
-    })
-
-    Retainer.distanceobject = self:Create("Text", {
-        Visible = false,
-        Color = Color3.new(1, 1, 1),
-        Size = 13,
-        Center = true,
-        Outline = true,
-        OutlineColor = Color3.new(0, 0, 0),
-        Font = Drawing.Fonts.Plex
-    })
-
-    Retainer.boxfillobject = self:Create("Square", {
-        Visible = false,
-        Transparency = 0.5,
-        Color = Color3.new(1, 1, 1),
-        Thickness = 1,
-        Filled = true,
-    })
-
-    Retainer.boxoutlineobject = self:Create("Square", {
-        Visible = false,
-        Transparency = 1,
-        Color = Color3.new(),
-        Thickness = 3,
-        Filled = false,
-    })
-
-    Retainer.boxobject = self:Create("Square", {
-        Visible = false,
-        Transparency = 1,
-        Color = Color3.new(1, 1, 1),
-        Thickness = 1,
-        Filled = false,
-    })
-
-    Retainer.healthbaroutlineobject = self:Create("Square", {
-        Visible = false,
-        Transparency = 1,
-        Color = Color3.new(),
-        Thickness = 3,
-        Filled = false,
-    })
-
-    Retainer.healthbarobject = self:Create("Square", {
-        Visible = false,
-        Transparency = 1,
-        Color = Color3.new(1, 1, 1),
-        Thickness = 1,
-        Filled = false,
-    })
-
-    Retainer.tracerobject = self:Create("Line", {
-        Thickness = 1
-    })
-
-    local CanRun = true
-
-    RunService:BindToRenderStep(Player.Name .. "Esp", 1, function()
-        if (not CanRun) then
-            return
-        end
-
-        CanRun = false
-
-        local Character, Root = self:GetCharacter(Player)
-
-        if (Character and Root) then
-            local Health, MaxHealth = self:GetHealth(Player)
-            local _, OnScreen = CurrentCamera:WorldToViewportPoint(Root.Position)
-            local Magnitude = (Root.Position - CurrentCamera.CFrame.p).Magnitude
-            local CanShow = OnScreen and self.settings.enabled
-
-            if (self.settings.limitdistance and Magnitude > self.settings.maxdistance) then
-                CanShow = false
+function DrawESP(part, name, color)
+    local pos, vis = cam:WorldToScreenPoint(part.Position)
+    
+    local text = Drawing.new("Text")
+    text.Text = name
+    text.Position = Vector2.new(pos.x, pos.y)
+    text.Size = 18
+    text.Color = color
+    text.Outline = true
+    text.Center = true
+    
+    local line = Drawing.new("Line")
+    line.From = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y)
+    line.To = Vector2.new(pos.x, pos.y - 20)
+    line.Color = color
+    line.Thickness = 1.5
+    line.Transparency = 0.5
+    
+    local box = Drawing.new("Quad")
+    box.PointA = Vector2.new()
+    box.PointB = Vector2.new()
+    box.PointC = Vector2.new()
+    box.PointD = Vector2.new()
+    box.Color = color
+    box.Thickness = 1.5
+    box.Transparency = 1
+    
+    game:GetService("RunService").Stepped:connect(function()
+        pcall(function()
+            local descendant = part:IsDescendantOf(workspace)
+            if not descendant and text ~= nil and line ~= nil then
+                text:Remove()
+                line:Remove()
+                box:Remove()
             end
 
-            if (self.settings.teamcheck and not self:CheckTeam(Player)) then
-                CanShow = false
+            local pos, vis = cam:WorldToScreenPoint(part.Position)
+            
+            if part ~= nil then
+                text.Position = Vector2.new(pos.x, pos.y)
+                line.To = Vector2.new(pos.x, pos.y)
+                text.Text = name.."\n\n["..calcdistance(game.Players.LocalPlayer.Character.HumanoidRootPart, part).."] ".."["..part.Parent:FindFirstChildOfClass("Model").Name.."]"
             end
-
-            if (Health <= 0) then
-                CanShow = false
-            end
-
-            if (CanShow) then
-                local Data = self:GetBoundingBox(Character)
-                local Width, Height = math.floor(Data.Positions.TopLeft.X - Data.Positions.TopRight.X), math.floor(Data.Positions.TopLeft.Y - Data.Positions.BottomLeft.Y)
-                local BoxSize = Vector2.new(Width, Height)
-                local BoxPosition = Vector2.new(math.floor(Data.Positions.BottomRight.X), math.floor(Data.Positions.BottomRight.Y))
-                local HealthbarSize = Vector2.new(2, math.floor(BoxSize.Y * (Health / MaxHealth)))
-                local HealthbarPosition = Vector2.new(math.floor(Data.Positions.TopLeft.X - ((4 + self.settings.healthbarsoffset) + (self.settings.healthbarsoutline and 1 or 0))), math.floor(Data.Positions.BottomLeft.Y))
-                local ViewportSize = CurrentCamera.ViewportSize
-
-                Retainer.nameobject.Visible = self.settings.names
-                Retainer.nameobject.Outline = self.settings.namesoutline
-                Retainer.nameobject.Size = self.settings.textsize
-                Retainer.nameobject.Font = self.settings.textfont
-                if self.settings.aimtarget == Player and self.settings.aimtarget_on then
-                    Retainer.nameobject.Color = self.settings.aimtarget_color
+            
+            if _G.esp then
+                if _G.tracers then
+                    if vis then
+                        line.Visible = true
+                    else 
+                        line.Visible = false
+                    end
                 else
-                    Retainer.nameobject.Color = self:ParseColor(self.settings.namescolor, Player)
+                    line.Visible = false
                 end
-                Retainer.nameobject.Position = Vector2.new(Data.Positions.Middle.X, (Data.Positions.TopLeft.Y - 15) + self.settings.textoffset)
-
-                Retainer.distanceobject.Visible = self.settings.distance
-                Retainer.distanceobject.Outline = self.settings.distanceoutline
-                Retainer.distanceobject.Text = math.floor(Magnitude) .. " Studs"
-                Retainer.distanceobject.Size = self.settings.textsize
-                Retainer.distanceobject.Font = self.settings.textfont
-                if self.settings.aimtarget == Player and self.settings.aimtarget_on then
-                    Retainer.distanceobject.Color = self.settings.aimtarget_color
+                
+                local partcorners = GetPartCorners(part)
+                local topright, trvis = cam:WorldToScreenPoint(partcorners.TR)
+                local bottomright, brvis = cam:WorldToScreenPoint(partcorners.BR)
+                local topleft, tlvis = cam:WorldToScreenPoint(partcorners.TL)
+                local bottomleft, blvis = cam:WorldToScreenPoint(partcorners.BL)
+                
+                if _G.name then
+                    if (vis or trvis or brvis or tlvis or blvis) then
+                        text.Visible = true
+                        box.Visible = true
+                        box.PointA = Vector2.new(topright.X, topright.Y + 36)
+                        box.PointB = Vector2.new(topleft.X, topleft.Y + 36)
+                        box.PointC = Vector2.new(bottomleft.X, bottomleft.Y + 36)
+                        box.PointD = Vector2.new(bottomright.X, bottomright.Y + 36)
+                    else
+                        box.Visible = false
+                        text.Visible = false
+                    end
                 else
-                    Retainer.distanceobject.Color = self:ParseColor(self.settings.distancecolor, Player)
+                    text.Visible = false
+                    box.Visible = false
                 end
-                Retainer.distanceobject.Position = Vector2.new(Data.Positions.Middle.X, (Data.Positions.BottomLeft.Y + 3) + self.settings.textoffset)
-
-                Retainer.boxobject.Visible = self.settings.boxes
-                if self.settings.aimtarget == Player and self.settings.aimtarget_on then
-                    Retainer.boxobject.Color = self.settings.aimtarget_color
-                else
-                    Retainer.boxobject.Color = self:ParseColor(self.settings.boxescolor, Player)
-                end
-                Retainer.boxoutlineobject.Visible = self.settings.boxes and self.settings.boxesoutline
-                if self.settings.aimtarget == Player and self.settings.aimtarget_on then 
-                    Retainer.boxfillobject.Color = self.settings.aimtarget_color
-                else
-                    Retainer.boxfillobject.Color = self:ParseColor(self.settings.boxesfillcolor, Player)
-                end
-                Retainer.boxfillobject.Transparency = self.settings.boxesfilltrans
-                Retainer.boxfillobject.Visible = self.settings.boxes and self.settings.boxesfill
-
-                Retainer.boxobject.Size = BoxSize
-                Retainer.boxobject.Position = BoxPosition
-
-                Retainer.boxoutlineobject.Size = BoxSize
-                Retainer.boxoutlineobject.Position = BoxPosition
-
-                Retainer.boxfillobject.Size = BoxSize
-                Retainer.boxfillobject.Position = BoxPosition
-
-                Retainer.healthbarobject.Visible = self.settings.healthbars
-                if self.settings.aimtarget == Player and self.settings.aimtarget_on then
-                    Retainer.healthbarobject.Color = self.settings.aimtarget_color
-                else
-                    Retainer.healthbarobject.Color = self:ParseColor(self.settings.healthbarscolor, Player)
-                end
-                Retainer.healthbaroutlineobject.Visible = self.settings.healthbars and self.settings.healthbarsoutline
-
-                Retainer.healthbarobject.Size = HealthbarSize
-                Retainer.healthbarobject.Position = HealthbarPosition
-
-                Retainer.healthbaroutlineobject.Size = Vector2.new(HealthbarSize.X, BoxSize.Y)
-                Retainer.healthbaroutlineobject.Position = HealthbarPosition
-
-                Retainer.tracerobject.Visible = self.settings.tracers
-                if self.settings.aimtarget == Player and self.settings.aimtarget_on then
-                    Retainer.tracerobject.Color = self.settings.aimtarget_color
-                else
-                    Retainer.tracerobject.Color = self:ParseColor(self.settings.tracerscolor, Player)
-                end
-                Retainer.tracerobject.To = Data.Positions.Middle
-
-                local Origin, Target = self.settings.tracersorigin, Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
-
-                if (Origin == "Top") then
-                    Target = Vector2.new(Target.X, 0)
-                elseif (Origin == "Bottom") then
-                    Target = Vector2.new(Target.X, ViewportSize.Y)
-                elseif (Origin == "Left") then
-                    Target = Vector2.new(0, Target.Y)
-                elseif (Origin == "Right") then
-                    Target = Vector2.new(ViewportSize.X, Taget.Y)
-                elseif (Origin == "Mouse") then
-                    Target = Vector2.new(Mouse.X, Mouse.Y + 36)
-                end
-
-                Retainer.tracerobject.From = Target
             else
-                for i,v in pairs(Retainer) do
-                    v.Visible = false
-                end
+                line.Visible = false
+                text.Visible = false
+                box.Visible = false
             end
-        else
-            for i,v in pairs(Retainer) do
-                v.Visible = false
-            end
-        end
-
-        task.wait(math.clamp(self.settings.refreshrate / 1000, 0, 9e9))
-
-        CanRun = true
-    end)
-
-    self.cache[Player] = Retainer
-end
-
-function module:RemoveEsp(Player)
-    local Data = self.cache[Player]
-
-    if (Data) then
-        RunService:UnbindFromRenderStep(Player.Name .. "Esp")
-
-        for _, Object in pairs(Data) do
-            Object:Remove()
-        end
-    end
-end
-
-function module:GetCharacter(Player)
-    return Player.Character, Player.Character and Player.Character:WaitForChild("HumanoidRootPart")
-end
-
-function module:GetBoundingBox(Character)
-    local Data = {}
-
-    for i,v in pairs(Character:GetChildren()) do
-        if (v:IsA("BasePart") and v.Name ~= "HumanoidRootPart") then
-            for i2, v2 in pairs(Math.getpartinfo2(v.CFrame, v.Size)) do
-                table.insert(Data, v2)
-            end
-        end
-    end
-
-    return Math.getposlist2(Data)
-end
-
-function module:GetHealth(Player)
-    local Character = self:GetCharacter(Player)
-    local Humanoid = Character and Character:WaitForChild("Humanoid")
-
-    return Humanoid and Humanoid.Health, Humanoid and Humanoid.MaxHealth
-end
-
-function module:GetTeam(Player)
-    return Player.Team
-end
-
-function module:GetTeamColor(Player)
-    local Team = self:GetTeam(Player)
-    return Team and Team.TeamColor.Color
-end
-
-function module:CheckTeam(Player)
-    return Player.Team ~= LocalPlayer.Team
-end
-
-function module:Init()
-    for i,v in pairs(Players:GetPlayers()) do
-        self:AddEsp(v)
-    end
-
-    Players.PlayerAdded:Connect(function(Player)
-        self:AddEsp(Player)
-    end)
-
-    Players.PlayerRemoving:Connect(function(Player)
-        self:AddEsp(Player)
+        end)
     end)
 end
 
-return module
+if _G.mainfunc == nil then
+    for i, v in pairs(getgc(true)) do
+    	if typeof(v) == "table" and rawget(v, "getbodyparts") then
+    		_G.mainfunc = v
+    		break;
+    	end
+    end
+end
+
+game:GetService("RunService").Stepped:connect(function()
+    for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+        local bodyparts = _G.mainfunc.getbodyparts(v)
+        if bodyparts and type(bodyparts) == "table" and rawget(bodyparts, "rootpart") and bodyparts.rootpart ~= nil then
+            v.Character = bodyparts.rootpart.Parent
+        end
+    end
+end)
+
+wait()
+
+for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+    if v ~= plr and v.Character and v.Character.Parent then
+        if tostring(v.Team) == "Ghosts" then
+            DrawESP(v.Character.HumanoidRootPart, v.Name, Color3.fromRGB(255, 100, 0))
+        elseif tostring(v.Team) == "Phantoms" then
+            DrawESP(v.Character.HumanoidRootPart, v.Name, Color3.fromRGB(0, 100, 255))
+        end
+    end
+end
+
+game:GetService("Workspace").Players.Phantoms.ChildAdded:connect(function(v)
+    repeat wait() until game:GetService("Players"):GetPlayerFromCharacter(v) ~= nil
+    local plrtochar = game:GetService("Players"):GetPlayerFromCharacter(v)
+
+    DrawESP(plrtochar.Character.HumanoidRootPart, plrtochar.Name, Color3.fromRGB(0, 100, 255))
+end)
+
+game:GetService("Workspace").Players.Ghosts.ChildAdded:connect(function(v)
+    repeat wait() until game:GetService("Players"):GetPlayerFromCharacter(v) ~= nil
+    local plrtochar = game:GetService("Players"):GetPlayerFromCharacter(v)
+
+    DrawESP(plrtochar.Character.HumanoidRootPart, plrtochar.Name, Color3.fromRGB(255, 100, 0))
+end)
