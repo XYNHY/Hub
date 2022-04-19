@@ -16,9 +16,9 @@ local function GetPartCorners(Part)
 	}
 end
 
-_G.esp = true
-_G.tracers = true
-_G.name = true
+getgenv().esp = true
+getgenv().tracers = true
+getgenv().name = true
 
 function DrawESP(part, name, color)
     local pos, vis = cam:WorldToScreenPoint(part.Position)
@@ -64,8 +64,8 @@ function DrawESP(part, name, color)
                 text.Text = name.."\n\n["..calcdistance(game.Players.LocalPlayer.Character.HumanoidRootPart, part).."] ".."["..part.Parent:FindFirstChildOfClass("Model").Name.."]"
             end
             
-            if _G.esp then
-                if _G.tracers then
+            if getgenv().esp then
+                if getgenv().tracers then
                     if vis then
                         line.Visible = true
                     else 
@@ -81,7 +81,7 @@ function DrawESP(part, name, color)
                 local topleft, tlvis = cam:WorldToScreenPoint(partcorners.TL)
                 local bottomleft, blvis = cam:WorldToScreenPoint(partcorners.BL)
                 
-                if _G.name then
+                if getgenv().name then
                     if (vis or trvis or brvis or tlvis or blvis) then
                         text.Visible = true
                         box.Visible = true
@@ -106,10 +106,10 @@ function DrawESP(part, name, color)
     end)
 end
 
-if _G.mainfunc == nil then
+if getgenv().mainfunc == nil then
     for i, v in pairs(getgc(true)) do
     	if typeof(v) == "table" and rawget(v, "getbodyparts") then
-    		_G.mainfunc = v
+    		getgenv().mainfunc = v
     		break;
     	end
     end
@@ -117,7 +117,7 @@ end
 
 game:GetService("RunService").Stepped:connect(function()
     for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-        local bodyparts = _G.mainfunc.getbodyparts(v)
+        local bodyparts = getgenv().mainfunc.getbodyparts(v)
         if bodyparts and type(bodyparts) == "table" and rawget(bodyparts, "rootpart") and bodyparts.rootpart ~= nil then
             v.Character = bodyparts.rootpart.Parent
         end
