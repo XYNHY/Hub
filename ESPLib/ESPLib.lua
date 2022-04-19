@@ -16,10 +16,10 @@ local function GetPartCorners(Part)
 	}
 end
 
-getgenv().esp = true
-getgenv().tracers = true
-getgenv().name = true
-
+getgenv().esp = false
+getgenv().tracers = false
+getgenv().name = false
+getgenv().Boxes = false
 function DrawESP(part, name, color)
     local pos, vis = cam:WorldToScreenPoint(part.Position)
     
@@ -84,23 +84,30 @@ function DrawESP(part, name, color)
                 if getgenv().name then
                     if (vis or trvis or brvis or tlvis or blvis) then
                         text.Visible = true
-                        box.Visible = true
-                        box.PointA = Vector2.new(topright.X, topright.Y + 36)
-                        box.PointB = Vector2.new(topleft.X, topleft.Y + 36)
-                        box.PointC = Vector2.new(bottomleft.X, bottomleft.Y + 36)
-                        box.PointD = Vector2.new(bottomright.X, bottomright.Y + 36)
+                        
                     else
-                        box.Visible = false
+                        
                         text.Visible = false
                     end
                 else
                     text.Visible = false
                     box.Visible = false
                 end
+	       if getgenv().Boxes then
+	          if vis then
+		        box.Visible = true
+                        box.PointA = Vector2.new(topright.X, topright.Y + 36)
+                        box.PointB = Vector2.new(topleft.X, topleft.Y + 36)
+                        box.PointC = Vector2.new(bottomleft.X, bottomleft.Y + 36)
+                        box.PointD = Vector2.new(bottomright.X, bottomright.Y + 36)
+		   end
+			
+		   else
+		   box.Visible = false
+		end
             else
                 line.Visible = false
                 text.Visible = false
-                box.Visible = false
             end
         end)
     end)
