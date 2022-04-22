@@ -1,0 +1,43 @@
+local players = game:GetService('Players');
+local client = players.LocalPlayer;
+local range = 20;
+
+local network, gamelogic do
+for i, v in next, getgc(true) do
+if type(v) == 'table' then
+if rawget(v, 'send') then
+network = v;
+end
+if rawget(v, 'setsprintdisable') then
+gamelogic = v;
+end
+end
+
+if network and gamelogic then
+break
+end
+end
+
+if (not network) or (not gamelogic) then
+return client:Kick("failed to find dependencies")
+end
+end
+
+game:GetService('RunService').RenderStepped:connect(function()
+if client.Character and client.Character:FindFirstChild('HumanoidRootPart') then
+if gamelogic.currentgun and gamelogic.currentgun.type == 'KNIFE' then
+local pos = client.Character.HumanoidRootPart.Position
+for i, player in next, players:GetPlayers() do
+if player ~= client and player.Team ~= client.Team and player.Character then
+local root = player.Character:FindFirstChild('HumanoidRootPart');
+if root then
+local distance = math.floor((pos - root.Position).magnitude)
+if distance <= range then
+network:send('knifehit', player, tick(), player.Character.Head)
+end
+end
+end
+end
+end
+end
+end)
