@@ -1,6 +1,6 @@
 --variables
 
-local keys, network = loadstring(game:HttpGet("https://raw.githubusercontent.com/Introvert1337/RobloxReleases/main/Scripts/Jailbreak/KeyFetcher.lua"))();
+local keys, network = loadstring(game:HttpGet("https://raw.githubusercontent.com/XYNHY/Hub/main/JailBreak/NetWork.txt"))();
 
 local replicated_storage = game:GetService("ReplicatedStorage");
 local run_service = game:GetService("RunService");
@@ -289,7 +289,12 @@ local function teleport(cframe, tried) -- unoptimized
                 vehicle_root_part = nearest_vehicle.PrimaryPart;
             end;
 
-            movement:move_to_position(vehicle_root_part, cframe, dependencies.variables.vehicle_speed, true);
+            for i,v in pairs(workspace.Vehicles:GetChildren()) do 
+	if v.Seat.PlayerName.Value == game:GetService("Players").LocalPlayer.Name then 
+		v:MoveTo(Vector3.new(cframe))
+	end
+       end
+
 
             repeat -- attempt to exit car
                 task.wait(0.15);
