@@ -70,10 +70,12 @@ CloudWare.engineFunctions.Teleport = function(position)
 	wait(1)
 	for i,v in pairs(workspace.Vehicles:GetChildren()) do
 		if v.Seat.PlayerName.Value == game:GetService("Players").LocalPlayer.Name then
-			v:MoveTo(Vector3.new(position)) 
+			v:SetPrimaryPartCFrame(CFrame.new(position)) 
 		end
 	end
 end
+
+
 
 
 return CloudWare
