@@ -1,0 +1,1222 @@
+-- UILIBRAY v2
+local players = game:GetService("Players")
+local tweenservice = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+
+local Library = {}
+
+local Draggable = false
+local Camera = workspace:WaitForChild("Camera")
+
+function Library:validate(default, options)
+	for i, v in pairs(default) do
+		if options[i] == nil then
+			options[i] = v
+		end
+	end
+end
+
+function Library:Tween(obj, prop, callback)
+	local tween = tweenservice:Create(obj, tweenInfo, prop)
+	tween.Completed:Connect(
+		callback or function()
+		end
+	)
+	tween:Play()
+end
+
+function Library:Draggable(TopBar, Main)
+	local DragMousePosition, FramePosition
+	TopBar.InputBegan:Connect(
+		function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				Draggable = true
+				DragMousePosition = Vector2.new(input.Position.X, input.Position.Y)
+				FramePosition = Vector2.new(Main.Position.X.Scale, Main.Position.Y.Scale)
+			end
+		end
+	)
+	uis.InputChanged:Connect(
+		function(input)
+			if Draggable == true then
+				local NewPosition =
+					FramePosition +
+					((Vector2.new(input.Position.X, input.Position.Y) - DragMousePosition) / Camera.ViewportSize)
+				Main.Position = UDim2.new(NewPosition.X, 0, NewPosition.Y, 0)
+			end
+		end
+	)
+
+	uis.InputEnded:Connect(
+		function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				Draggable = false
+			end
+		end
+	)
+end
+
+function Library:new(options)
+	options = options or {}
+	Library:validate(
+		{
+			name = "UI Library"
+		},
+		options or {}
+	)
+
+	local GUI = {
+		CurrentTab = nil
+	}
+
+	-- main
+	do
+		-- StarterGui.UI
+		if not RunService:IsStudio() then
+			if CoreGui:FindFirstChild("UI") ~= nil then
+				CoreGui["UI"]:Destroy()
+			end
+		end
+		GUI["1"] =
+			Instance.new(
+				"ScreenGui",
+				RunService:IsStudio() and game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") or CoreGui
+			)
+		GUI["1"]["ResetOnSpawn"] = false
+		GUI["1"]["Name"] = [[UI]]
+
+		-- StarterGui.UI.Main
+		GUI["2"] = Instance.new("Frame", GUI["1"])
+		GUI["2"]["BorderSizePixel"] = 0
+		GUI["2"]["BackgroundColor3"] = Color3.fromRGB(42, 42, 42)
+		GUI["2"]["AnchorPoint"] = Vector2.new(0.5, 0.5)
+		GUI["2"]["Size"] = UDim2.new(0, 400, 0, 300)
+		GUI["2"]["Position"] = UDim2.new(0.5, 0, 0.5, 0)
+		GUI["2"]["Name"] = [[Main]]
+
+		-- StarterGui.UI.Main.UICorner
+		GUI["3"] = Instance.new("UICorner", GUI["2"])
+		GUI["3"]["CornerRadius"] = UDim.new(0, 6)
+
+		-- StarterGui.UI.Main.DropShadowHolder
+		GUI["4"] = Instance.new("Frame", GUI["2"])
+		GUI["4"]["ZIndex"] = 0
+		GUI["4"]["BorderSizePixel"] = 0
+		GUI["4"]["BackgroundTransparency"] = 1
+		GUI["4"]["Size"] = UDim2.new(1, 0, 1, 0)
+		GUI["4"]["Name"] = [[DropShadowHolder]]
+
+		-- StarterGui.UI.Main.DropShadowHolder.DropShadow
+		GUI["5"] = Instance.new("ImageLabel", GUI["4"])
+		GUI["5"]["ZIndex"] = 0
+		GUI["5"]["BorderSizePixel"] = 0
+		GUI["5"]["SliceCenter"] = Rect.new(49, 49, 450, 450)
+		GUI["5"]["ScaleType"] = Enum.ScaleType.Slice
+		GUI["5"]["ImageColor3"] = Color3.fromRGB(0, 0, 0)
+		GUI["5"]["ImageTransparency"] = 0.5
+		GUI["5"]["AnchorPoint"] = Vector2.new(0.5, 0.5)
+		GUI["5"]["Image"] = [[rbxassetid://6014261993]]
+		GUI["5"]["Size"] = UDim2.new(1, 47, 1, 47)
+		GUI["5"]["Name"] = [[DropShadow]]
+		GUI["5"]["BackgroundTransparency"] = 1
+		GUI["5"]["Position"] = UDim2.new(0.5, 0, 0.5, 0)
+
+		-- StarterGui.UI.Main.TopBar
+		GUI["6"] = Instance.new("Frame", GUI["2"])
+		GUI["6"]["BackgroundColor3"] = Color3.fromRGB(35, 35, 35)
+		GUI["6"]["Size"] = UDim2.new(1, 0, 0, 30)
+		GUI["6"]["Name"] = [[TopBar]]
+
+		-- StarterGui.UI.Main.TopBar.UICorner
+		GUI["7"] = Instance.new("UICorner", GUI["6"])
+		GUI["7"]["CornerRadius"] = UDim.new(0, 6)
+
+		-- StarterGui.UI.Main.TopBar.Extention
+		GUI["8"] = Instance.new("Frame", GUI["6"])
+		GUI["8"]["BorderSizePixel"] = 0
+		GUI["8"]["BackgroundColor3"] = Color3.fromRGB(35, 35, 35)
+		GUI["8"]["AnchorPoint"] = Vector2.new(0, 1)
+		GUI["8"]["Size"] = UDim2.new(1, 0, 0.5, 0)
+		GUI["8"]["Position"] = UDim2.new(0, 0, 1, 0)
+		GUI["8"]["Name"] = [[Extention]]
+
+		-- StarterGui.UI.Main.TopBar.Title
+		GUI["9"] = Instance.new("TextLabel", GUI["6"])
+		GUI["9"]["TextXAlignment"] = Enum.TextXAlignment.Left
+		GUI["9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+		GUI["9"]["TextSize"] = 14
+		GUI["9"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+		GUI["9"]["Size"] = UDim2.new(0.5, 0, 1, 0)
+		GUI["9"]["Text"] = options["name"]
+		GUI["9"]["Name"] = [[Title]]
+		GUI["9"]["Font"] = Enum.Font.Gotham
+		GUI["9"]["BackgroundTransparency"] = 1
+
+		-- StarterGui.UI.Main.TopBar.Title.UIPadding
+		GUI["a"] = Instance.new("UIPadding", GUI["9"])
+		GUI["a"]["PaddingTop"] = UDim.new(0, 1)
+		GUI["a"]["PaddingLeft"] = UDim.new(0, 8)
+
+		-- StarterGui.UI.Main.TopBar.Close
+		GUI["b"] = Instance.new("ImageLabel", GUI["6"])
+		GUI["b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+		GUI["b"]["AnchorPoint"] = Vector2.new(1, 0)
+		GUI["b"]["Image"] = [[rbxassetid://10901477961]]
+		GUI["b"]["Size"] = UDim2.new(0, 25, 0, 26)
+		GUI["b"]["Name"] = [[Close]]
+		GUI["b"]["BackgroundTransparency"] = 1
+		GUI["b"]["Position"] = UDim2.new(1, 0, 0, 0)
+
+		local close = {
+			hover = false,
+			closed = false
+		}
+
+		if not close.hover then
+			Library:Draggable(GUI["6"], GUI["2"])
+		end
+
+		-- Close Logic
+		do
+			GUI["b"].MouseEnter:Connect(
+				function()
+					close.hover = true
+					if not close.hover then
+					end
+				end
+			)
+
+			GUI["b"].MouseLeave:Connect(
+				function()
+					close.hover = false
+					if close.hover then
+					end
+				end
+			)
+
+			uis.InputBegan:Connect(
+				function(input, gameprocess)
+					if gameprocess then
+						return
+					end
+
+					if input.UserInputType == Enum.UserInputType.MouseButton1 and close.hover then
+						close.closed = true
+						if close.closed then
+							GUI["2"].Visible = false
+						end
+					end
+					if input.KeyCode == Enum.KeyCode.RightShift and close.closed then
+						GUI["2"].Visible = true
+					end
+				end
+			)
+		end
+
+		-- StarterGui.UI.Main.TopBar.Line
+		GUI["c"] = Instance.new("Frame", GUI["6"])
+		GUI["c"]["BorderSizePixel"] = 0
+		GUI["c"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49)
+		GUI["c"]["AnchorPoint"] = Vector2.new(0, 1)
+		GUI["c"]["Size"] = UDim2.new(1, 0, 0, 1)
+		GUI["c"]["Position"] = UDim2.new(0, 0, 1, 0)
+		GUI["c"]["Name"] = [[Line]]
+
+		-- StarterGui.UI.Main.ContentContainer
+		GUI["1b"] = Instance.new("Frame", GUI["2"])
+		GUI["1b"]["BorderSizePixel"] = 0
+		GUI["1b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+		GUI["1b"]["AnchorPoint"] = Vector2.new(1, 0)
+		GUI["1b"]["BackgroundTransparency"] = 1
+		GUI["1b"]["Size"] = UDim2.new(1, -133, 1, -42)
+		GUI["1b"]["Position"] = UDim2.new(1, -6, 0, 36)
+		GUI["1b"]["Name"] = [[ContentContainer]]
+	end
+
+	-- Navigation
+	do
+		-- StarterGui.UI.Main.Navigation
+		GUI["d"] = Instance.new("Frame", GUI["2"])
+		GUI["d"]["BorderSizePixel"] = 0
+		GUI["d"]["BackgroundColor3"] = Color3.fromRGB(38, 38, 38)
+		GUI["d"]["Size"] = UDim2.new(0, 120, 1, -30)
+		GUI["d"]["Position"] = UDim2.new(0, 0, 0, 30)
+		GUI["d"]["Name"] = [[Navigation]]
+
+		-- StarterGui.UI.Main.Navigation.UICorner
+		GUI["e"] = Instance.new("UICorner", GUI["d"])
+		GUI["e"]["CornerRadius"] = UDim.new(0, 6)
+
+		-- StarterGui.UI.Main.Navigation.Hide
+		GUI["f"] = Instance.new("Frame", GUI["d"])
+		GUI["f"]["BorderSizePixel"] = 0
+		GUI["f"]["BackgroundColor3"] = Color3.fromRGB(38, 38, 38)
+		GUI["f"]["Size"] = UDim2.new(1, 0, 0, 20)
+		GUI["f"]["Name"] = [[Hide]]
+
+		-- StarterGui.UI.Main.Navigation.Hide2
+		GUI["10"] = Instance.new("Frame", GUI["d"])
+		GUI["10"]["BorderSizePixel"] = 0
+		GUI["10"]["BackgroundColor3"] = Color3.fromRGB(38, 38, 38)
+		GUI["10"]["AnchorPoint"] = Vector2.new(1, 0)
+		GUI["10"]["Size"] = UDim2.new(0, 20, 1, 0)
+		GUI["10"]["Position"] = UDim2.new(1, 0, 0, 0)
+		GUI["10"]["Name"] = [[Hide2]]
+
+		-- StarterGui.UI.Main.Navigation.ButtonHolder
+		GUI["11"] = Instance.new("Frame", GUI["d"])
+		GUI["11"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+		GUI["11"]["BackgroundTransparency"] = 1
+		GUI["11"]["Size"] = UDim2.new(1, 0, 1, 0)
+		GUI["11"]["Name"] = [[ButtonHolder]]
+
+		-- StarterGui.UI.Main.Navigation.ButtonHolder.UIPadding
+		GUI["12"] = Instance.new("UIPadding", GUI["11"])
+		GUI["12"]["PaddingTop"] = UDim.new(0, 8)
+		GUI["12"]["PaddingBottom"] = UDim.new(0, 8)
+
+		-- StarterGui.UI.Main.Navigation.ButtonHolder.UIListLayout
+		GUI["13"] = Instance.new("UIListLayout", GUI["11"])
+		GUI["13"]["Padding"] = UDim.new(0, 1)
+		GUI["13"]["SortOrder"] = Enum.SortOrder.LayoutOrder
+
+		-- StarterGui.UI.Main.Navigation.Line
+		GUI["1a"] = Instance.new("Frame", GUI["d"])
+		GUI["1a"]["BorderSizePixel"] = 0
+		GUI["1a"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49)
+		GUI["1a"]["BackgroundTransparency"] = 1
+		GUI["1a"]["Size"] = UDim2.new(0, 1, 1, 0)
+		GUI["1a"]["BorderColor3"] = Color3.fromRGB(49, 49, 49)
+		GUI["1a"]["Position"] = UDim2.new(1, 0, 0, 0)
+		GUI["1a"]["Name"] = [[Line]]
+	end
+
+	function GUI:CreateTab(options)
+		options = options or {}
+		Library:validate(
+			{
+				name = "Preview Tab",
+				Icon = "rbxassetid://10901941857"
+			},
+			options or {}
+		)
+
+		local Tab = {
+			Hover = false,
+			Active = false
+		}
+
+		-- Tab Button
+		do
+			-- StarterGui.UI.Main.Navigation.ButtonHolder.Inactive
+			Tab["17"] = Instance.new("TextLabel", GUI["11"])
+			Tab["17"]["BorderSizePixel"] = 0
+			Tab["17"]["TextXAlignment"] = Enum.TextXAlignment.Left
+			Tab["17"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+			Tab["17"]["TextSize"] = 12
+			Tab["17"]["TextColor3"] = Color3.fromRGB(159, 159, 159)
+			Tab["17"]["Size"] = UDim2.new(1, 0, 0, 24)
+			Tab["17"]["Text"] = options.name
+			Tab["17"]["Name"] = [[Inactive]]
+			Tab["17"]["Font"] = Enum.Font.Ubuntu
+			Tab["17"]["BackgroundTransparency"] = 1
+
+			-- StarterGui.UI.Main.Navigation.ButtonHolder.Inactive.UIPadding
+			Tab["18"] = Instance.new("UIPadding", Tab["17"])
+			Tab["18"]["PaddingLeft"] = UDim.new(0, 28)
+
+			-- StarterGui.UI.Main.Navigation.ButtonHolder.UICorner
+			Tab["20"] = Instance.new("UICorner", Tab["17"])
+			Tab["20"]["CornerRadius"] = UDim.new(0, 3)
+
+			-- StarterGui.UI.Main.Navigation.ButtonHolder.Inactive.Icon
+			Tab["19"] = Instance.new("ImageLabel", Tab["17"])
+			Tab["19"]["BorderSizePixel"] = 0
+			Tab["19"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+			Tab["19"]["ImageColor3"] = Color3.fromRGB(159, 159, 159)
+			Tab["19"]["AnchorPoint"] = Vector2.new(0, 0.5)
+			Tab["19"]["Image"] = options.Icon
+			Tab["19"]["Size"] = UDim2.new(0, 20, 0, 20)
+			Tab["19"]["Name"] = [[Icon]]
+			Tab["19"]["BackgroundTransparency"] = 1
+			Tab["19"]["Position"] = UDim2.new(0, -24, 0.5, 0)
+
+			-- StarterGui.UI.Main.ContentContainer.HomeTab
+			Tab["1c"] = Instance.new("ScrollingFrame", GUI["1b"])
+			Tab["1c"]["BorderSizePixel"] = 0
+			Tab["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+			Tab["1c"]["BackgroundTransparency"] = 1
+			Tab["1c"]["Size"] = UDim2.new(1, 0, 1, 0)
+			Tab["1c"]["Selectable"] = false
+			Tab["1c"]["ScrollBarThickness"] = 0
+			Tab["1c"]["Name"] = [[HomeTab]]
+			Tab["1c"]["SelectionGroup"] = false
+			Tab["1c"].Visible = false
+
+			-- StarterGui.UI.Main.ContentContainer.HomeTab.UIPadding
+			Tab["23"] = Instance.new("UIPadding", Tab["1c"])
+			Tab["23"]["PaddingTop"] = UDim.new(0, 1)
+			Tab["23"]["PaddingRight"] = UDim.new(0, 1)
+			Tab["23"]["PaddingBottom"] = UDim.new(0, 1)
+			Tab["23"]["PaddingLeft"] = UDim.new(0, 1)
+
+			-- StarterGui.UI.Main.ContentContainer.HomeTab.UIListLayout
+			GUI["24"] = Instance.new("UIListLayout", Tab["1c"])
+			GUI["24"]["Padding"] = UDim.new(0, 6)
+			GUI["24"]["SortOrder"] = Enum.SortOrder.LayoutOrder
+		end
+
+		-- methods
+		function Tab:Deactivate()
+			if Tab.Active then
+				Tab.Active = false
+				Tab.Hover = false
+				Library:Tween(Tab["17"], {TextColor3 = Color3.fromRGB(159, 159, 159)})
+				Library:Tween(Tab["19"], {ImageColor3 = Color3.fromRGB(159, 159, 159)})
+				Library:Tween(Tab["17"], {BackgroundTransparency = 1})
+				Tab["1c"].Visible = false
+			end
+		end
+
+		function Tab:Activate()
+			if not Tab.Active then
+				if GUI.CurrentTab ~= nil then
+					GUI.CurrentTab:Deactivate()
+				end
+
+				Tab.Active = true
+				Tab["1c"].Visible = true
+				Library:Tween(Tab["17"], {BackgroundTransparency = .8})
+				Library:Tween(Tab["17"], {TextColor3 = Color3.fromRGB(255, 255, 255)})
+				Library:Tween(Tab["19"], {ImageColor3 = Color3.fromRGB(255, 255, 255)})
+				GUI.CurrentTab = Tab
+			end
+		end
+
+		-- Logic
+		do
+			Tab["17"].MouseEnter:Connect(
+				function()
+					Tab.Hover = true
+					if not Tab.Active then
+						Library:Tween(Tab["17"], {TextColor3 = Color3.fromRGB(255, 255, 255)})
+						Library:Tween(Tab["19"], {ImageColor3 = Color3.fromRGB(255, 255, 255)})
+					end
+				end
+			)
+
+			Tab["17"].MouseLeave:Connect(
+				function()
+					Tab.Hover = false
+					if not Tab.Active then
+						Library:Tween(Tab["17"], {TextColor3 = Color3.fromRGB(159, 159, 159)})
+						Library:Tween(Tab["19"], {ImageColor3 = Color3.fromRGB(159, 159, 159)})
+					end
+				end
+			)
+
+			uis.InputBegan:Connect(
+				function(input, gameprocess)
+					if gameprocess then
+						return
+					end
+
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						if Tab.Hover then
+							Tab:Activate()
+						end
+					end
+				end
+			)
+
+			if GUI.CurrentTab == nil then
+				Tab:Activate()
+			end
+		end
+
+		function Tab:Button(options)
+			options = options or {}
+			Library:validate(
+				{
+					name = "Button",
+					callback = function()
+					end
+				},
+				options or {}
+			)
+
+			local Button = {
+				Hover = false,
+				MouseDown = false
+			}
+
+			-- Button Main
+			do
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Button
+				Button["1d"] = Instance.new("Frame", Tab["1c"])
+				Button["1d"]["BackgroundColor3"] = Color3.fromRGB(33, 33, 33)
+				Button["1d"]["Size"] = UDim2.new(1, 0, 0, 32)
+				Button["1d"]["Name"] = [[Button]]
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Button.UICorner
+				Button["1e"] = Instance.new("UICorner", Button["1d"])
+				Button["1e"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Button.UIStroke
+				Button["1f"] = Instance.new("UIStroke", Button["1d"])
+				Button["1f"]["Color"] = Color3.fromRGB(48, 48, 48)
+				Button["1f"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Button.Title
+				Button["20"] = Instance.new("TextLabel", Button["1d"])
+				Button["20"]["TextXAlignment"] = Enum.TextXAlignment.Left
+				Button["20"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Button["20"]["TextSize"] = 14
+				Button["20"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+				Button["20"]["Size"] = UDim2.new(1, -20, 1, 0)
+				Button["20"]["Text"] = options.name
+				Button["20"]["Name"] = [[Title]]
+				Button["20"]["Font"] = Enum.Font.Ubuntu
+				Button["20"]["BackgroundTransparency"] = 1
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Button.UIPadding
+				Button["21"] = Instance.new("UIPadding", Button["1d"])
+				Button["21"]["PaddingTop"] = UDim.new(0, 6)
+				Button["21"]["PaddingRight"] = UDim.new(0, 6)
+				Button["21"]["PaddingBottom"] = UDim.new(0, 6)
+				Button["21"]["PaddingLeft"] = UDim.new(0, 6)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Button.Icon
+				Button["22"] = Instance.new("ImageLabel", Button["1d"])
+				Button["22"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Button["22"]["AnchorPoint"] = Vector2.new(1, 0)
+				Button["22"]["Image"] = [[rbxassetid://10901932186]]
+				Button["22"]["Size"] = UDim2.new(0, 20, 0, 20)
+				Button["22"]["Name"] = [[Icon]]
+				Button["22"]["BackgroundTransparency"] = 1
+				Button["22"]["Position"] = UDim2.new(1, 0, 0, 0)
+			end
+
+			-- Methods
+
+			function Button:SetText(text)
+				Button["20"].Text = text
+			end
+
+			-- Logic
+			do
+				Button["1d"].MouseEnter:Connect(
+					function()
+						Button.Hover = true
+						Library:Tween(Button["1f"], {Color = Color3.fromRGB(62, 62, 62)})
+					end
+				)
+
+				Button["1d"].MouseLeave:Connect(
+					function()
+						Button.Hover = false
+						if not Button.MouseDown then
+							Library:Tween(Button["1f"], {Color = Color3.fromRGB(48, 48, 48)})
+						end
+					end
+				)
+
+				uis.InputBegan:Connect(
+					function(input, gameprocess)
+						if gameprocess then
+							return
+						end
+
+						if input.UserInputType == Enum.UserInputType.MouseButton1 and Button.Hover then
+							Button.MouseDown = true
+							Library:Tween(Button["1d"], {BackgroundColor3 = Color3.fromRGB(45, 45, 45)})
+							Library:Tween(Button["1f"], {Color = Color3.fromRGB(53, 53, 53)})
+							options.callback()
+						end
+					end
+				)
+
+				uis.InputEnded:Connect(
+					function(input, gameprocess)
+						if gameprocess then
+							return
+						end
+
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							Button.MouseDown = false
+							if Button.Hover then
+								-- hovering
+								Library:Tween(Button["1d"], {BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+								Library:Tween(Button["1f"], {Color = Color3.fromRGB(62, 62, 62)})
+							else
+								-- not hovering
+								Library:Tween(Button["1d"], {BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+								Library:Tween(Button["1f"], {Color = Color3.fromRGB(48, 48, 48)})
+							end
+						end
+					end
+				)
+			end
+
+			return Button
+		end
+
+		function Tab:Label(options)
+			options = options or {}
+			Library:validate(
+				{
+					text = "Label"
+				},
+				options or {}
+			)
+
+			local Label = {}
+
+			-- Label Main
+			do
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label
+				Label["25"] = Instance.new("Frame", Tab["1c"])
+				Label["25"]["BackgroundColor3"] = Color3.fromRGB(33, 33, 33)
+				Label["25"]["Size"] = UDim2.new(1, 0, 0, 26)
+				Label["25"]["Name"] = [[Label]]
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label.UICorner
+				Label["26"] = Instance.new("UICorner", Label["25"])
+				Label["26"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label.UIStroke
+				Label["27"] = Instance.new("UIStroke", Label["25"])
+				Label["27"]["Color"] = Color3.fromRGB(49, 49, 49)
+				Label["27"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label.UICorner
+				Label["26"] = Instance.new("UICorner", Label["25"])
+				Label["26"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label.UIStroke
+				Label["27"] = Instance.new("UIStroke", Label["25"])
+				Label["27"]["Color"] = Color3.fromRGB(49, 49, 49)
+				Label["27"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label.Title
+				Label["28"] = Instance.new("TextLabel", Label["25"])
+				Label["28"]["TextXAlignment"] = Enum.TextXAlignment.Left
+				Label["28"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Label["28"]["TextSize"] = 14
+				Label["28"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+				Label["28"]["Size"] = UDim2.new(1, 0, 1, 0)
+				Label["28"].Text = options.text
+				Label["28"]["Name"] = [[Title]]
+				Label["28"]["Font"] = Enum.Font.Ubuntu
+				Label["28"]["BackgroundTransparency"] = 1
+				Label["28"]["TextWrapped"] = true
+				Label["28"]["TextYAlignment"] = Enum.TextYAlignment.Top
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Label.UIPadding
+				Label["29"] = Instance.new("UIPadding", Label["25"])
+				Label["29"]["PaddingTop"] = UDim.new(0, 6)
+				Label["29"]["PaddingRight"] = UDim.new(0, 6)
+				Label["29"]["PaddingBottom"] = UDim.new(0, 6)
+				Label["29"]["PaddingLeft"] = UDim.new(0, 6)
+			end
+
+			-- Methods
+
+			local function Resize()
+				Label["28"].Text = options.text
+
+				Label["28"].Size = UDim2.new(Label["28"].Size.X.Scale, Label["28"].Size.X.Offset, 0, math.huge)
+
+				Label["28"].Size =
+					UDim2.new(Label["28"].Size.X.Scale, Label["28"].Size.X.Offset, 0, Label["28"].TextBounds.Y)
+
+				Label["25"].Size =
+					UDim2.new(Label["25"].Size.X.Scale, Label["25"].Size.X.Offset, 0, Label["28"].TextBounds.Y + 12)
+			end
+
+			function Label:SetText(text)
+				options.text = text
+				Resize()
+			end
+
+			Resize()
+
+			return Label
+		end
+
+		function Tab:Slider(options)
+			options = options or {}
+			Library:validate(
+				{
+					name = "Slider",
+					min = 0,
+					max = 100,
+					callback = function()
+					end
+				},
+				options or {}
+			)
+
+			local Slider = {
+				hover = false,
+				mousedown = false,
+				connection = nil
+			}
+
+			-- Slider main
+			do
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider
+				Slider["2a"] = Instance.new("Frame", Tab["1c"])
+				Slider["2a"]["BorderSizePixel"] = 0
+				Slider["2a"]["BackgroundColor3"] = Color3.fromRGB(33, 33, 33)
+				Slider["2a"]["Size"] = UDim2.new(1, 0, 0, 38)
+				Slider["2a"]["BorderColor3"] = Color3.fromRGB(26, 26, 26)
+				Slider["2a"]["Name"] = [[Slider]]
+				Slider["2a"]["Selectable"] = true
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.UICorner
+				Slider["2b"] = Instance.new("UICorner", Slider["2a"])
+				Slider["2b"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.UIStroke
+				Slider["2c"] = Instance.new("UIStroke", Slider["2a"])
+				Slider["2c"]["Color"] = Color3.fromRGB(48, 48, 48)
+				Slider["2c"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.Title
+				Slider["2d"] = Instance.new("TextLabel", Slider["2a"])
+				Slider["2d"]["TextXAlignment"] = Enum.TextXAlignment.Left
+				Slider["2d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Slider["2d"]["TextSize"] = 14
+				Slider["2d"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+				Slider["2d"]["Size"] = UDim2.new(1, -24, 1, -10)
+				Slider["2d"]["Text"] = options.name
+				Slider["2d"]["Name"] = [[Title]]
+				Slider["2d"]["Font"] = Enum.Font.Ubuntu
+				Slider["2d"]["BackgroundTransparency"] = 1
+				Slider["2d"]["Selectable"] = true
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.UIPadding
+				Slider["2e"] = Instance.new("UIPadding", Slider["2a"])
+				Slider["2e"]["PaddingTop"] = UDim.new(0, 6)
+				Slider["2e"]["PaddingRight"] = UDim.new(0, 6)
+				Slider["2e"]["PaddingBottom"] = UDim.new(0, 6)
+				Slider["2e"]["PaddingLeft"] = UDim.new(0, 6)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.Value
+				Slider["2f"] = Instance.new("TextLabel", Slider["2a"])
+				Slider["2f"]["TextXAlignment"] = Enum.TextXAlignment.Right
+				Slider["2f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Slider["2f"]["TextSize"] = 14
+				Slider["2f"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+				Slider["2f"]["AnchorPoint"] = Vector2.new(1, 0)
+				Slider["2f"]["Size"] = UDim2.new(0, 24, 1, -10)
+				Slider["2f"]["Text"] = options.min or "0"
+				Slider["2f"]["Name"] = [[Value]]
+				Slider["2f"]["Font"] = Enum.Font.Ubuntu
+				Slider["2f"]["BackgroundTransparency"] = 1
+				Slider["2f"]["Position"] = UDim2.new(1, 0, 0, 0)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.SliderBack
+				Slider["30"] = Instance.new("Frame", Slider["2a"])
+				Slider["30"]["BorderSizePixel"] = 0
+				Slider["30"]["BackgroundColor3"] = Color3.fromRGB(13, 13, 13)
+				Slider["30"]["AnchorPoint"] = Vector2.new(0, 1)
+				Slider["30"]["Size"] = UDim2.new(1, 0, 0, 4)
+				Slider["30"]["BorderColor3"] = Color3.fromRGB(13, 13, 13)
+				Slider["30"]["Position"] = UDim2.new(0, 0, 1, 0)
+				Slider["30"]["Name"] = [[SliderBack]]
+				Slider["30"]["Selectable"] = true
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.SliderBack.UICorner
+				Slider["31"] = Instance.new("UICorner", Slider["30"])
+				Slider["31"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.SliderBack.UIStroke
+				Slider["32"] = Instance.new("UIStroke", Slider["30"])
+				Slider["32"]["Color"] = Color3.fromRGB(43, 43, 43)
+				Slider["32"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.SliderBack.Draggable
+				Slider["33"] = Instance.new("Frame", Slider["30"])
+				Slider["33"]["BorderSizePixel"] = 0
+				Slider["33"]["BackgroundColor3"] = Color3.fromRGB(45, 45, 45)
+				Slider["33"]["Size"] = UDim2.new(0, 4, 1, 0)
+				Slider["33"]["Name"] = [[draggingEnabled]]
+				Slider["33"]["Selectable"] = true
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.Slider.SliderBack.Draggable.UICorner
+				Slider["34"] = Instance.new("UICorner", Slider["33"])
+				Slider["34"]["CornerRadius"] = UDim.new(0, 4)
+			end
+
+			-- methods
+			function Slider:Set(v)
+				if v == nil then
+					local mouse = game.Players.LocalPlayer:GetMouse()
+					local percentage =
+						math.clamp((mouse.X - Slider["30"].AbsolutePosition.X) / (Slider["30"].AbsoluteSize.X), 0, 1)
+					local value = math.floor(((options.max - options.min) * percentage) + options.min)
+					Slider["2f"].Text = tostring(value)
+					Slider["33"].Size = UDim2.fromScale(percentage, 1)
+				else
+					Slider["2f"].Text = tostring(v)
+					Slider["33"].Size = UDim2.fromScale(((v - options.min) / (options.max - options.min)), 1)
+				end
+				options.callback(tonumber(Slider["2f"].Text))
+			end
+
+			-- Slider Logic
+			do
+				Slider["2a"].MouseEnter:Connect(
+					function()
+						Slider.hover = true
+						Library:Tween(Slider["32"], {Color = Color3.fromRGB(52, 52, 52)})
+						Library:Tween(Slider["2c"], {Color = Color3.fromRGB(57, 57, 57)})
+						Library:Tween(Slider["33"], {BackgroundColor3 = Color3.fromRGB(58, 58, 58)})
+					end
+				)
+
+				Slider["2a"].MouseLeave:Connect(
+					function()
+						Slider.hover = false
+
+						if not Slider.mousedown then
+							Library:Tween(Slider["32"], {Color = Color3.fromRGB(43, 43, 43)})
+							Library:Tween(Slider["2c"], {Color = Color3.fromRGB(48, 48, 48)})
+							Library:Tween(Slider["33"], {BackgroundColor3 = Color3.fromRGB(45, 45, 45)})
+						end
+					end
+				)
+
+				uis.InputBegan:Connect(
+					function(input, gameprocess)
+						if gameprocess then
+							return
+						end
+						if input.UserInputType == Enum.UserInputType.MouseButton1 and Slider.hover then
+							Library:Tween(Slider["2a"], {BackgroundColor3 = Color3.fromRGB(52, 52, 52)})
+							Library:Tween(Slider["2c"], {Color = Color3.fromRGB(62, 62, 62)})
+							Library:Tween(Slider["32"], {Color = Color3.fromRGB(63, 63, 63)})
+							Library:Tween(Slider["33"], {BackgroundColor3 = Color3.fromRGB(66, 66, 66)})
+							Slider.mousedown = true
+
+							if not Slider.connection then
+								Slider.connection =
+									RunService.RenderStepped:Connect(
+										function()
+											Slider:Set()
+										end
+									)
+							end
+						end
+					end
+				)
+
+				uis.InputEnded:Connect(
+					function(input, gameprocess)
+						if gameprocess then
+							return
+						end
+						local runservice = game:GetService("RunService")
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							Slider.mousedown = false
+							if Slider.hover then
+								Library:Tween(Slider["2a"], {BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+								Library:Tween(Slider["32"], {Color = Color3.fromRGB(52, 52, 52)})
+								Library:Tween(Slider["2c"], {Color = Color3.fromRGB(57, 57, 57)})
+								Library:Tween(Slider["33"], {BackgroundColor3 = Color3.fromRGB(58, 58, 58)})
+							else
+								Library:Tween(Slider["2a"], {BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+								Library:Tween(Slider["32"], {Color = Color3.fromRGB(43, 43, 43)})
+								Library:Tween(Slider["2c"], {Color = Color3.fromRGB(48, 48, 48)})
+								Library:Tween(Slider["33"], {BackgroundColor3 = Color3.fromRGB(45, 45, 45)})
+							end
+
+							if Slider.connection then
+								Slider.connection:Disconnect()
+							end
+							Slider.connection = nil
+						end
+					end
+				)
+			end
+
+			return Slider
+		end
+
+		function Tab:DropDown(options)
+			options = options or {}
+			Library:validate(
+				{
+					name = "DropDown",
+					Options = {"E", "J", "E"},
+					callback = function()
+					end
+				},
+				options or {}
+			)
+
+			options.items = options.items or {}
+
+			local DropDown = {
+				hover = false,
+				dropped = false,
+				itemnumber = 0
+			}
+
+			-- DropDown main
+			do
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown
+				DropDown["35"] = Instance.new("Frame", Tab["1c"])
+				DropDown["35"]["BackgroundColor3"] = Color3.fromRGB(33, 33, 33)
+				DropDown["35"]["Size"] = UDim2.new(1, 0, 0, 30)
+				DropDown["35"]["ClipsDescendants"] = true
+				DropDown["35"]["Name"] = [[DropDown]]
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.UICorner
+				DropDown["36"] = Instance.new("UICorner", DropDown["35"])
+				DropDown["36"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.UIStroke
+				DropDown["37"] = Instance.new("UIStroke", DropDown["35"])
+				DropDown["37"]["Color"] = Color3.fromRGB(49, 49, 49)
+				DropDown["37"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.Title
+				DropDown["38"] = Instance.new("TextLabel", DropDown["35"])
+				DropDown["38"]["TextXAlignment"] = Enum.TextXAlignment.Left
+				DropDown["38"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				DropDown["38"]["TextSize"] = 14
+				DropDown["38"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+				DropDown["38"]["Size"] = UDim2.new(1, -20, 0, 20)
+				DropDown["38"]["Text"] = options.name
+				DropDown["38"]["Name"] = [[Title]]
+				DropDown["38"]["Font"] = Enum.Font.Ubuntu
+				DropDown["38"]["BackgroundTransparency"] = 1
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.UIPadding
+				DropDown["39"] = Instance.new("UIPadding", DropDown["35"])
+				DropDown["39"]["PaddingTop"] = UDim.new(0, 6)
+				DropDown["39"]["PaddingRight"] = UDim.new(0, 6)
+				DropDown["39"]["PaddingBottom"] = UDim.new(0, 6)
+				DropDown["39"]["PaddingLeft"] = UDim.new(0, 6)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.Icon
+				DropDown["3a"] = Instance.new("ImageLabel", DropDown["35"])
+				DropDown["3a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				DropDown["3a"]["AnchorPoint"] = Vector2.new(1, 0)
+				DropDown["3a"]["Image"] = [[rbxassetid://10902946669]]
+				DropDown["3a"]["Size"] = UDim2.new(0, 20, 0, 20)
+				DropDown["3a"]["Name"] = [[Icon]]
+				DropDown["3a"]["BackgroundTransparency"] = 1
+				DropDown["3a"]["Position"] = UDim2.new(1, 0, 0, 0)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder
+				DropDown["3b"] = Instance.new("Frame", DropDown["35"])
+				DropDown["3b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				DropDown["3b"]["BackgroundTransparency"] = 1
+				DropDown["3b"]["Size"] = UDim2.new(1, 0, 1, -24)
+				DropDown["3b"]["Position"] = UDim2.new(0, 0, 0, 26)
+				DropDown["3b"]["Visible"] = false
+				DropDown["3b"]["Name"] = [[OptionHolder]]
+			end
+
+			-- DropDown Logic
+			do
+				DropDown["35"].MouseEnter:Connect(
+					function()
+						DropDown.hover = true
+						Library:Tween(DropDown["37"], {Color = Color3.fromRGB(59, 59, 59)})
+					end
+				)
+
+				DropDown["35"].MouseLeave:Connect(
+					function()
+						DropDown.hover = false
+						if not DropDown.dropped then
+							Library:Tween(DropDown["37"], {Color = Color3.fromRGB(49, 49, 49)})
+						end
+					end
+				)
+
+				task.spawn(
+					function()
+						for i, v in next, options.Options do
+							-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder.InactiveOption
+							DropDown["3d"] = Instance.new("TextLabel", DropDown["3b"])
+							DropDown["3d"]["BackgroundColor3"] = Color3.fromRGB(46, 46, 46)
+							DropDown["3d"]["TextSize"] = 12
+							DropDown["3d"]["TextColor3"] = Color3.fromRGB(203, 203, 203)
+							DropDown["3d"]["Size"] = UDim2.new(1, 0, 0, 16)
+							DropDown["3d"]["Name"] = [[InactiveOption]]
+							DropDown["3d"]["Font"] = Enum.Font.Ubuntu
+							DropDown["3d"].Text = v or "An Option"
+
+							-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder.UIListLayout
+							DropDown["3c"] = Instance.new("UIListLayout", DropDown["3b"])
+							DropDown["3c"]["Padding"] = UDim.new(0, 4)
+							DropDown["3c"]["SortOrder"] = Enum.SortOrder.LayoutOrder
+
+							-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder.InactiveOption.UIStroke
+							DropDown["3e"] = Instance.new("UIStroke", DropDown["3d"])
+							DropDown["3e"]["Color"] = Color3.fromRGB(50, 50, 50)
+							DropDown["3e"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+							-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder.InactiveOption.UICorner
+							DropDown["3f"] = Instance.new("UICorner", DropDown["3d"])
+							DropDown["3f"]["CornerRadius"] = UDim.new(0, 2)
+
+							-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder.InactiveOption.UIStroke
+							DropDown["3e"] = Instance.new("UIStroke", DropDown["3d"])
+							DropDown["3e"]["Color"] = Color3.fromRGB(50, 50, 50)
+							DropDown["3e"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+							-- StarterGui.UI.Main.ContentContainer.HomeTab.DropDown.OptionHolder.InactiveOption.UICorner
+							DropDown["3f"] = Instance.new("UICorner", DropDown["3d"])
+							DropDown["3f"]["CornerRadius"] = UDim.new(0, 2)
+
+							DropDown["3d"].MouseEnter:Connect(
+								function()
+									DropDown.hover = true
+								end
+							)
+
+							DropDown["3d"].MouseLeave:Connect(
+								function()
+									DropDown.hover = false
+								end
+							)
+
+							function DropDown:Toggle(bool)
+								DropDown.dropped = bool
+
+								if DropDown.dropped then
+									DropDown["3b"].Visible = true
+									DropDown["35"].Size = UDim2.new(1, 0, 0.172, 30)
+								else
+									DropDown["3b"].Visible = false
+									DropDown["35"].Size = UDim2.new(1, 0, 0, 30)
+								end
+							end
+
+							DropDown["3d"].InputBegan:Connect(
+								function(input, gameprocess)
+									if gameprocess then
+										return
+									end
+
+									if input.UserInputType == Enum.UserInputType.MouseButton1 and DropDown.hover then
+										options.callback(v)
+										DropDown["3b"].Visible = false
+										DropDown["35"].Size = UDim2.new(1, 0, 0, 30)
+									end
+								end
+							)
+
+							uis.InputBegan:Connect(
+								function(input, gameprocess)
+									if gameprocess then
+										return
+									end
+
+									if input.UserInputType == Enum.UserInputType.MouseButton1 and DropDown.hover then
+										DropDown.dropped = not DropDown.dropped
+										DropDown:Toggle(DropDown.dropped)
+									end
+								end
+							)
+
+							uis.InputEnded:Connect(
+								function(input, gameprocess)
+									if gameprocess then
+										return
+									end
+
+									if input.UserInputType == Enum.UserInputType.MouseButton1 then
+										if DropDown.hover then
+											Library:Tween(DropDown["35"],{BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+											Library:Tween(DropDown["37"], {Color = Color3.fromRGB(59, 59, 59)})
+										else
+											Library:Tween(DropDown["35"],{BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+											Library:Tween(DropDown["37"], {Color = Color3.fromRGB(49, 49, 49)})
+										end
+									end
+								end
+							)
+						end
+					end
+				)
+			end
+
+			return DropDown
+		end
+
+		function Tab:Toggle(options)
+			options = options or {}
+			Library:validate(
+				{
+					name = "Toggle",
+					callback = function()
+					end
+				},
+				options or {}
+			)
+
+			local Toggle = {
+				hover = false,
+				mousedown = false,
+				enabled = false
+			}
+
+			-- Toggle main
+			do
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle
+				Toggle["46"] = Instance.new("Frame", Tab["1c"])
+				Toggle["46"]["BackgroundColor3"] = Color3.fromRGB(33, 33, 33)
+				Toggle["46"]["Size"] = UDim2.new(1, 0, 0, 32)
+				Toggle["46"]["Name"] = [[InactiveToggle]]
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.UICorner
+				Toggle["47"] = Instance.new("UICorner", Toggle["46"])
+				Toggle["47"]["CornerRadius"] = UDim.new(0, 4)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.UIStroke
+				Toggle["48"] = Instance.new("UIStroke", Toggle["46"])
+				Toggle["48"]["Color"] = Color3.fromRGB(48, 48, 48)
+				Toggle["48"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.Title
+				Toggle["49"] = Instance.new("TextLabel", Toggle["46"])
+				Toggle["49"]["TextXAlignment"] = Enum.TextXAlignment.Left
+				Toggle["49"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Toggle["49"]["TextSize"] = 14
+				Toggle["49"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+				Toggle["49"]["Size"] = UDim2.new(1, -26, 1, 0)
+				Toggle["49"]["Text"] = options.name
+				Toggle["49"]["Name"] = [[Title]]
+				Toggle["49"]["Font"] = Enum.Font.Ubuntu
+				Toggle["49"]["BackgroundTransparency"] = 1
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.UIPadding
+				Toggle["4a"] = Instance.new("UIPadding", Toggle["46"])
+				Toggle["4a"]["PaddingTop"] = UDim.new(0, 6)
+				Toggle["4a"]["PaddingRight"] = UDim.new(0, 6)
+				Toggle["4a"]["PaddingBottom"] = UDim.new(0, 6)
+				Toggle["4a"]["PaddingLeft"] = UDim.new(0, 6)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.CheckMarkHolder
+				Toggle["4b"] = Instance.new("Frame", Toggle["46"])
+				Toggle["4b"]["BackgroundColor3"] = Color3.fromRGB(40, 40, 40)
+				Toggle["4b"]["AnchorPoint"] = Vector2.new(1, 0.5)
+				Toggle["4b"]["Size"] = UDim2.new(0, 16, 0, 16)
+				Toggle["4b"]["Position"] = UDim2.new(1, -3, 0.5, 0)
+				Toggle["4b"]["Name"] = [[CheckMarkHolder]]
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.CheckMarkHolder.UICorner
+				Toggle["4c"] = Instance.new("UICorner", Toggle["4b"])
+				Toggle["4c"]["CornerRadius"] = UDim.new(0, 2)
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.CheckMarkHolder.UIStroke
+				Toggle["4d"] = Instance.new("UIStroke", Toggle["4b"])
+				Toggle["4d"]["Color"] = Color3.fromRGB(48, 48, 48)
+				Toggle["4d"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
+
+				-- StarterGui.UI.Main.ContentContainer.HomeTab.InactiveToggle.CheckMarkHolder.CheckMark
+				Toggle["4e"] = Instance.new("ImageLabel", Toggle["4b"])
+				Toggle["4e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+				Toggle["4e"]["ImageTransparency"] = 1
+				Toggle["4e"]["AnchorPoint"] = Vector2.new(0.5, 0.5)
+				Toggle["4e"]["Image"] = [[rbxassetid://10903442212]]
+				Toggle["4e"]["Size"] = UDim2.new(1, -2, 1, -2)
+				Toggle["4e"]["Name"] = [[CheckMark]]
+				Toggle["4e"]["BackgroundTransparency"] = 1
+				Toggle["4e"]["Position"] = UDim2.new(0.5, 0, 0.5, 0)
+			end
+
+			-- methods
+			function Toggle:Set(state)
+				if state == nil then
+					Toggle.enabled = not Toggle.enabled
+				else
+					Toggle.enabled = state
+				end
+				if Toggle.enabled then
+					Library:Tween(Toggle["4b"], {BackgroundColor3 = Color3.fromRGB(80, 232, 80)})
+					Library:Tween(Toggle["4d"], {Color = Color3.fromRGB(0, 255, 59)})
+					Library:Tween(Toggle["4e"], {ImageTransparency = 0})
+				else
+					Library:Tween(Toggle["4b"], {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
+					Library:Tween(Toggle["4d"], {Color = Color3.fromRGB(48, 48, 48)})
+					Library:Tween(Toggle["4e"], {ImageTransparency = 1})
+				end
+			end
+
+			-- Toggle Logic
+			do
+				Toggle["46"].MouseEnter:Connect(
+					function()
+						Toggle.hover = true
+						Library:Tween(Toggle["48"], {Color = Color3.fromRGB(59, 59, 59)})
+					end
+				)
+
+				Toggle["46"].MouseLeave:Connect(
+					function()
+						Toggle.hover = false
+						if not Toggle.mousedown then
+							Library:Tween(Toggle["48"], {Color = Color3.fromRGB(48, 48, 48)})
+						end
+					end
+				)
+
+				uis.InputBegan:Connect(
+					function(input, gameprocess)
+						if gameprocess then
+							return
+						end
+
+						if input.UserInputType == Enum.UserInputType.MouseButton1 and Toggle.hover then
+							Toggle.mousedown = true
+							Library:Tween(Toggle["46"], {BackgroundColor3 = Color3.fromRGB(59, 59, 59)})
+							Library:Tween(Toggle["48"], {Color = Color3.fromRGB(59, 59, 59)})
+							Toggle:Set()
+							pcall(options.callback, Toggle.enabled)
+						end
+					end
+				)
+
+				uis.InputEnded:Connect(
+					function(input, gameprocess)
+						if gameprocess then
+							return
+						end
+
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							Toggle.mousedown = false
+
+							if Toggle.hover then
+								Library:Tween(Toggle["46"], {BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+								Library:Tween(Toggle["48"], {Color = Color3.fromRGB(59, 59, 59)})
+							else
+								Library:Tween(Toggle["46"], {BackgroundColor3 = Color3.fromRGB(33, 33, 33)})
+								Library:Tween(Toggle["48"], {Color = Color3.fromRGB(48, 48, 48)})
+							end
+						end
+					end
+				)
+			end
+
+			return Toggle
+		end
+
+		return Tab
+	end
+
+	return GUI
+end
+return Library
