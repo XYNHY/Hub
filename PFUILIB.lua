@@ -16,7 +16,7 @@ local Mouse = LocalPlayer:GetMouse();
 local ProtectGui = gethui or (syn and syn.protect_gui) or (function() end);
 
 local ScreenGui = Instance.new('ScreenGui');
-ScreenGui.Name "MainGui"
+ScreenGui.Name = "MainGui"
 ProtectGui(ScreenGui);
 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
