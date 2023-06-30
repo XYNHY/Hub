@@ -1,5 +1,6 @@
-if game.CoreGui:FindFirstChild("Main") ~= nil then
-	game.CoreGui["Main"]:Destroy()
+local CoreGui = game:GetService("CoreGui")
+if CoreGui:FindFirstChild("MainGui") ~= nil then
+	CoreGui["MainGUI"]:Destroy()
 end
 local InputService = game:GetService('UserInputService');
 local TextService = game:GetService('TextService');
@@ -12,10 +13,10 @@ local RenderStepped = RunService.RenderStepped;
 local LocalPlayer = Players.LocalPlayer;
 local Mouse = LocalPlayer:GetMouse();
 
-local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
+local ProtectGui = gethui or (function() end);
 
 local ScreenGui = Instance.new('ScreenGui');
-ScreenGui.Name "Main"
+ScreenGui.Name "MainGui"
 ProtectGui(ScreenGui);
 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
