@@ -1,3 +1,4 @@
+-- credits to siper for the ESP Library.
 local module = {
     drawingcache = {},
     cache = {},
@@ -43,19 +44,15 @@ local module = {
     }
 }
 
--- Libraries
 local Math = loadstring(game:HttpGet("https://raw.githubusercontent.com/XYNHY/Hub/main/PF_ESP_Math"))()
 
--- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- Cache
 local LocalPlayer = Players.LocalPlayer
 local CurrentCamera = workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
--- Functions
 function module:Create(Class, Properties)
     local Object = Drawing.new(Class)
 
