@@ -1,5 +1,4 @@
--- Credits to Wally and Linoria for UILIB
-if game.CoreGui.Main ~= nil then
+if game.CoreGui:FindFirstChild("Main") ~= nil then
 	game.CoreGui["Main"]:Destroy()
 end
 local InputService = game:GetService('UserInputService');
