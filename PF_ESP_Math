@@ -1,3 +1,4 @@
+-- Credits to Irays for Math For ESP
 local Math = {
     physicsignore = {workspace:FindFirstChild("Players"), workspace.CurrentCamera, workspace:FindFirstChild("Ignore")},
     raycast = workspace.FindPartOnRayWithIgnoreList,
@@ -106,10 +107,10 @@ local function solve(a, b, c, d, e)
     else
         return
     end
-end
+end 
 Math.solve = solve
 
-local function bulletcheck(o, t, p)
+local function bulletcheck(o, t, p) 
     if p <= 0.01 then
         return false
     end
@@ -166,7 +167,7 @@ local function farthestpoint(o, ve, p)
 end 
 Math.farthestpoint = farthestpoint
 
-local function scanplayer(s, d, r, e)
+local function scanplayer(s, d, r, e) 
     local c = CFrame.new(s, d)
 
     for p = 1, 2 do
@@ -210,7 +211,7 @@ local function scanplayer(s, d, r, e)
     end
     
     return false
-end
+end 
 Math.scanplayer = scanplayer
 
 local function scanplayerwithtpr(s, d, r, e, j) 
@@ -272,7 +273,7 @@ function Math.minpos(t)
     end
 end 
 
-function Math.vischeck(o, t)
+function Math.vischeck(o, t) 
     local cf = CFrame.new(o, t)
     local d = (o - t).Magnitude
     local os = {
@@ -294,7 +295,7 @@ function Math.vischeck(o, t)
     return true
 end 
 
-function Math.closestvisiblepos(o, t)
+function Math.closestvisiblepos(o, t) 
     local cf = CFrame.new(o, t)
     local d = (o - t).Magnitude
     local f = math.huge
@@ -319,7 +320,7 @@ function Math.closestvisiblepos(o, t)
     end
 
     return t
-end
+end 
 
 function Math.timehit(o, ve, a, t) 
 	local d = o - t
@@ -338,7 +339,7 @@ function Math.timehit(o, ve, a, t)
 	return st, n
 end 
 
-function Math.trajectory(o, a, t, s, e)
+function Math.trajectory(o, a, t, s, e) 
     local f = -a
     local ld = t - o
     local a = Math.dot(f, f)
@@ -355,7 +356,7 @@ function Math.trajectory(o, a, t, s, e)
     return f * t / 2 + (e or Math.v3) + ld / t, t
 end 
 
-function Math.old_trajectory(pp, pv, pa, tp, tv, ta, s)
+function Math.old_trajectory(pp, pv, pa, tp, tv, ta, s) 
     local rp = tp - pp
     local rv = tv - pv
     local ra = ta - pa
@@ -365,9 +366,9 @@ function Math.old_trajectory(pp, pv, pa, tp, tv, ta, s)
             return ra * v / 2 + tv + rp / v, v
         end
     end
-end
+end 
 
-function Math.simple_trajectory(s, a, r)
+function Math.simple_trajectory(s, a, r) 
     local a0 = 4 * Math.dot(r, r)
     local a1 = -4 * (Math.dot(a, r) + s * s)
     local a2 = Math.dot(a, a)
@@ -379,12 +380,12 @@ function Math.simple_trajectory(s, a, r)
     end
 end 
 
-function Math.wtvp(p)
+function Math.wtvp(p) 
     p = workspace.CurrentCamera:WorldToViewportPoint(p)
     return Vector2.new(p.X, p.Y), p.Z
 end 
 
-function Math.getpartends(cf, s)
+function Math.getpartends(cf, s) 
     return Math.wtvp((cf * CFrame.new(Vector3.new(0, s.Y / 2, 0))).Position), Math.wtvp((cf * CFrame.new(Vector3.new(0, -s.Y / 2, 0))).Position)
 end 
 
@@ -407,9 +408,9 @@ function Math.getpartinfo3(cf, s)
         LeftBottomBack = (cf * CFrame.new(Vector3.new(Left, Bottom, Back))).Position,
         RightBottomBack = (cf * CFrame.new(Vector3.new(Right, Bottom, Back))).Position
     }
-end
+end 
 
-function Math.getpartinfo2(cf, s)
+function Math.getpartinfo2(cf, s) 
     local Positions = {}
     local Top = s.Y / 2
     local Bottom = -s.Y / 2
@@ -428,9 +429,9 @@ function Math.getpartinfo2(cf, s)
         LeftBottomBack = Math.wtvp((cf * CFrame.new(Vector3.new(Left, Bottom, Back))).Position),
         RightBottomBack = Math.wtvp((cf * CFrame.new(Vector3.new(Right, Bottom, Back))).Position)
     }
-end
+end 
 
-function Math.getposlist3(l)
+function Math.getposlist3(l) 
     local Positions = {}
     local Top = -math.huge
     local Bottom = math.huge
@@ -458,7 +459,7 @@ function Math.getposlist3(l)
         LeftBottomBack = Math.wtvp(Vector3.new(Left, Bottom, Back)),
         RightBottomBack = Math.wtvp(Vector3.new(Right, Bottom, Back))
     }
-end
+end 
 
 function Math.getposlist2(l)
     local TopY = math.huge
@@ -488,6 +489,6 @@ function Math.getposlist2(l)
             PointD = Vector2.new(RightX, BottomY)
         }
     }
-end
+end 
 
 return Math
